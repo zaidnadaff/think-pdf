@@ -8,9 +8,10 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Loader2 } from "lucide-react"
+import { motion } from "framer-motion"
+import { AuthCard } from "@/components/auth/auth-card"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -41,95 +42,125 @@ export default function RegisterPage() {
     }
   }
 
+  const formVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 },
+  }
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md p-4">
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
-            <CardDescription className="text-center">Enter your details to create your account</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="p-3 text-sm bg-red-50 text-red-500 border border-red-200 rounded-md">{error}</div>
-              )}
+    <AuthCard
+      title="Create an account"
+      description="Enter your details to create your account"
+      footer={
+        <div className="text-sm text-center text-gray-500">
+          Already have an account?{" "}
+          <Link href="/login" className="text-purple-600 hover:underline font-medium">
+            Sign in
+          </Link>
+        </div>
+      }
+    >
+      <motion.form
+        onSubmit={handleSubmit}
+        className="space-y-4"
+        variants={formVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {error && (
+          <motion.div
+            className="p-3 text-sm bg-red-50 text-red-500 border border-red-200 rounded-md"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            {error}
+          </motion.div>
+        )}
 
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  placeholder="John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
+        <motion.div className="space-y-2" variants={itemVariants}>
+          <Label htmlFor="name">Full Name</Label>
+          <Input
+            id="name"
+            placeholder="John Doe"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="transition-all focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          />
+        </motion.div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+        <motion.div className="space-y-2" variants={itemVariants}>
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="name@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="transition-all focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          />
+        </motion.div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <p className="text-xs text-gray-500">Password must be at least 8 characters long</p>
-              </div>
+        <motion.div className="space-y-2" variants={itemVariants}>
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="transition-all focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          />
+          <p className="text-xs text-gray-500">Password must be at least 8 characters long</p>
+        </motion.div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox id="terms" required />
-                <label
-                  htmlFor="terms"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  I agree to the{" "}
-                  <Link href="/terms" className="text-blue-600 hover:underline">
-                    Terms of Service
-                  </Link>{" "}
-                  and{" "}
-                  <Link href="/privacy" className="text-blue-600 hover:underline">
-                    Privacy Policy
-                  </Link>
-                </label>
-              </div>
+        <motion.div className="flex items-center space-x-2" variants={itemVariants}>
+          <Checkbox id="terms" required />
+          <label
+            htmlFor="terms"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            I agree to the{" "}
+            <Link href="/terms" className="text-purple-600 hover:underline">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="text-purple-600 hover:underline">
+              Privacy Policy
+            </Link>
+          </label>
+        </motion.div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
-                  </>
-                ) : (
-                  "Create account"
-                )}
-              </Button>
-            </form>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <div className="text-sm text-center text-gray-500">
-              Already have an account?{" "}
-              <Link href="/login" className="text-blue-600 hover:underline">
-                Sign in
-              </Link>
-            </div>
-          </CardFooter>
-        </Card>
-      </div>
-    </div>
+        <motion.div variants={itemVariants}>
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating account...
+              </>
+            ) : (
+              "Create account"
+            )}
+          </Button>
+        </motion.div>
+      </motion.form>
+    </AuthCard>
   )
 }
 
