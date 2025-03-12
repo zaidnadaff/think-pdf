@@ -30,22 +30,20 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
 
   useEffect(() => {
     // Check if user is authenticated on mount
-    const checkAuth = async (): Promise<void> => {
-      try {
-        const response = await fetch("/api/auth/check", {
-          method: "GET",
-          credentials: "include",
-        });
-
-        setIsAuthenticated(response.ok);
-      } catch (error) {
-        setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
+    // const checkAuth = async (): Promise<void> => {
+    //   try {
+    //     const response = await fetch("/api/auth/check", {
+    //       method: "GET",
+    //       credentials: "include",
+    //     });
+    //     setIsAuthenticated(response.ok);
+    //   } catch (error) {
+    setIsAuthenticated(false);
+    // } finally {
+    setIsLoading(false);
+    // }
+    // };
+    // checkAuth();
   }, []);
 
   const login = async (credentials: LoginCredentials): Promise<ApiResponse> => {

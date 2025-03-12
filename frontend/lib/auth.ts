@@ -65,6 +65,36 @@ export async function registerUser(
   }
 }
 
+export async function verifyAccessToken(token: string): Promise<any> {
+  try {
+    const response = await fetch(`${API_URL}/token/verify-token`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        response.status === 401
+          ? "Token expired or invalid"
+          : "Failed to verify token"
+      );
+    }
+
+    const data = await response.json();
+    return data.user;
+  } catch (error) {
+    console.error(
+      "Token verification error:",
+      error instanceof Error ? error.message : String(error)
+    );
+    throw error;
+  }
+}
+
 export async function refreshAccessToken(
   refreshToken: string
 ): Promise<string> {

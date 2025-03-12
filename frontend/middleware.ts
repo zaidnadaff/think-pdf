@@ -1,30 +1,62 @@
-// middleware.ts
 import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
+  console.log(pathname);
 
   // Define paths that don't require authentication
   const publicPaths = ["/login", "/register", "/"];
-  const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
+  const isPublicPath = publicPaths.some((path) =>
+    path === "/" ? pathname === "/" : pathname.startsWith(path)
+  );
+
+  console.log(isPublicPath);
 
   // Get tokens from cookies
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
 
   // If accessing a protected route without authentication
-  if (!isPublicPath && !accessToken) {
-    // If we have a refresh token, try to use it
-    if (refreshToken) {
-      // Redirect to the refresh endpoint
-      return NextResponse.redirect(new URL("/api/auth/refresh", request.url));
-    }
+  if (!isPublicPath) {
+    try {
+      const verifyToken = async (accessToken: string) => {
+        const response = await fetch(
+          `${request.nextUrl.origin}/api/auth/verify`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ token: accessToken }),
+          }
+        );
+        return response;
+      };
+      if (accessToken) {
+        const response = await verifyToken(accessToken);
+        if (response.ok) {
+          return NextResponse.next();
+        }
+      }
+      const refreshResponse = await fetch(
+        new URL("/api/auth/refresh", request.url).toString(),
+        {
+          method: "GET",
+          headers: {
+            Cookie: request.headers.get("cookie") || "",
+          },
+        }
+      );
 
-    // No tokens, redirect to login
-    return NextResponse.redirect(new URL("/login", request.url));
+      // If refresh failed, redirect to login
+      if (!refreshResponse.ok) {
+        return NextResponse.redirect(new URL("/login", request.url));
+      }
+    } catch (err) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
   }
 
-  // For API routes that should check auth
   if (pathname.startsWith("/api/protected") && !accessToken) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }

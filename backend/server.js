@@ -13,12 +13,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", require("./app/routes/auth.js"));
-app.use("/api/users", require("./app/routes/user.js"));
-
-// Protected route example
-app.get("/api/protected", require("./app/middleware/auth.js"), (req, res) => {
-  res.json({ message: "This is a protected route", user: req.user });
-});
+app.use("/api/token", require("./app/routes/verifyToken.js"));
 
 // const startServer = async () => {
 //   try {

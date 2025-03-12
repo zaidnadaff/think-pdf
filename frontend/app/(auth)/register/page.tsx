@@ -1,46 +1,61 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Loader2 } from "lucide-react"
-import { motion } from "framer-motion"
-import { AuthCard } from "@/components/auth/auth-card"
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { AuthCard } from "@/components/auth/auth-card";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { RegisterCredentials } from "@/types/auth";
 
 export default function RegisterPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
+  const { register } = useAuth();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [credentials, setCredentials] = useState<RegisterCredentials>({
+    name: "",
+    email: "",
+    password: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     // Simulate registration - in a real app, you would call your auth API
     try {
-      // Mock successful registration
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // In a real app, you would store the auth token
-      // localStorage.setItem("token", "your-auth-token");
-
-      router.push("/chat")
+      const result = await register(credentials);
+      if (!result.success) {
+        setError(result.message);
+        toast.error("Login Failed", {
+          description: result.message,
+        });
+      } else {
+        toast.success("Registration Successful", {
+          description: "You have successfully registered.",
+        });
+        router.push("/login");
+      }
+      router.push("/chat");
     } catch (err) {
-      setError("Registration failed. Please try again.")
+      setError("Registration failed. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const formVariants = {
     hidden: { opacity: 0 },
@@ -50,12 +65,12 @@ export default function RegisterPage() {
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0 },
-  }
+  };
 
   return (
     <AuthCard
@@ -64,7 +79,10 @@ export default function RegisterPage() {
       footer={
         <div className="text-sm text-center text-gray-500">
           Already have an account?{" "}
-          <Link href="/login" className="text-purple-600 hover:underline font-medium">
+          <Link
+            href="/login"
+            className="text-purple-600 hover:underline font-medium"
+          >
             Sign in
           </Link>
         </div>
@@ -92,9 +110,11 @@ export default function RegisterPage() {
           <Label htmlFor="name">Full Name</Label>
           <Input
             id="name"
-            placeholder="John Doe"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            placeholder="Peter Parker"
+            value={credentials.name}
+            onChange={(e) =>
+              setCredentials({ ...credentials, name: e.target.value })
+            }
             required
             className="transition-all focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
           />
@@ -106,8 +126,10 @@ export default function RegisterPage() {
             id="email"
             type="email"
             placeholder="name@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={credentials.email}
+            onChange={(e) =>
+              setCredentials({ ...credentials, email: e.target.value })
+            }
             required
             className="transition-all focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
           />
@@ -118,15 +140,22 @@ export default function RegisterPage() {
           <Input
             id="password"
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={credentials.password}
+            onChange={(e) =>
+              setCredentials({ ...credentials, password: e.target.value })
+            }
             required
             className="transition-all focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
           />
-          <p className="text-xs text-gray-500">Password must be at least 8 characters long</p>
+          <p className="text-xs text-gray-500">
+            Password must be at least 8 characters long
+          </p>
         </motion.div>
 
-        <motion.div className="flex items-center space-x-2" variants={itemVariants}>
+        <motion.div
+          className="flex items-center space-x-2"
+          variants={itemVariants}
+        >
           <Checkbox id="terms" required />
           <label
             htmlFor="terms"
@@ -161,6 +190,5 @@ export default function RegisterPage() {
         </motion.div>
       </motion.form>
     </AuthCard>
-  )
+  );
 }
-
