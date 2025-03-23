@@ -3,9 +3,13 @@ const { DataTypes } = require("sequelize");
 const bcrypt = require("bcrypt");
 
 const User = sequelize.define(
-  "user",
+  "User",
   {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
     name: { type: DataTypes.STRING, allowNull: false },
     email: {
       type: DataTypes.STRING,
@@ -27,6 +31,17 @@ const User = sequelize.define(
     },
   }
 );
+
+User.associate = (models) => {
+  User.hasMany(models.RefreshToken, {
+    foreignKey: "userId",
+    as: "refreshTokens",
+  });
+  User.hasMany(models.Document, {
+    foreignKey: "userId",
+    as: "documents",
+  });
+};
 
 User.prototype.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
