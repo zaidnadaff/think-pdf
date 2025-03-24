@@ -5,7 +5,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   console.log(pathname);
 
   // Define paths that don't require authentication
-  const publicPaths = ["/login", "/register", "/"];
+  const publicPaths = ["/login", "/register", "/", "/chat"];
   const isPublicPath = publicPaths.some((path) =>
     path === "/" ? pathname === "/" : pathname.startsWith(path)
   );

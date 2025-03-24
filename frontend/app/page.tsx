@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { useRef } from "react"
-import { Header } from "@/components/layout/header"
-import { HeroSection } from "@/components/home/hero-section"
-import { FeaturesSection } from "@/components/home/features-section"
-import { motion } from "framer-motion"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
+import { useRef } from "react";
+import { Header } from "@/components/layout/header";
+import { HeroSection } from "@/components/home/hero-section";
+import { FeaturesSection } from "@/components/home/features-section";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 export default function Home() {
-  const featuresRef = useRef<HTMLDivElement>(null)
+  const featuresRef = useRef<HTMLDivElement>(null);
 
   // Scroll to features section
   const scrollToFeatures = () => {
-    featuresRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+    featuresRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <div className="flex flex-col min-h-screen overflow-hidden">
@@ -34,10 +34,13 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">See it in action</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                See it in action
+              </h2>
               <p className="text-lg text-gray-600 mb-8">
-                Upload any PDF document and start asking questions. Our AI understands context, can summarize content,
-                and extract specific information from your documents.
+                Upload any PDF document and start asking questions. Our AI
+                understands context, can summarize content, and extract specific
+                information from your documents.
               </p>
               <ul className="space-y-4">
                 {[
@@ -71,12 +74,21 @@ export default function Home() {
               transition={{ duration: 0.6 }}
             >
               <div className="relative rounded-xl overflow-hidden shadow-2xl">
-                <img src="/placeholder.svg?height=400&width=600" alt="PDF Chat Demo" className="w-full h-auto" />
+                <img
+                  src="/placeholder.svg?height=400&width=600"
+                  alt="PDF Chat Demo"
+                  className="w-full h-auto"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
                   <div className="p-6 text-white">
                     <h3 className="text-xl font-bold mb-2">Interactive Demo</h3>
-                    <p className="mb-4">See how our AI analyzes and responds to questions about your documents</p>
-                    <Button className="bg-white text-purple-600 hover:bg-gray-100">Watch Demo</Button>
+                    <p className="mb-4">
+                      See how our AI analyzes and responds to questions about
+                      your documents
+                    </p>
+                    <Button className="bg-white text-purple-600 hover:bg-gray-100">
+                      Watch Demo
+                    </Button>
                   </div>
                 </div>
 
@@ -107,12 +119,19 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to get started?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Ready to get started?
+            </h2>
             <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-              Join thousands of users who are already saving time by chatting with their documents.
+              Join thousands of users who are already saving time by chatting
+              with their documents.
             </p>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button asChild size="lg" className="bg-white text-purple-600 hover:bg-gray-100">
+              <Button
+                asChild
+                size="lg"
+                className="bg-white text-purple-600 hover:bg-gray-100"
+              >
                 <Link href="/register">
                   Create Free Account
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -129,19 +148,27 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <h3 className="text-xl font-bold mb-4">PDF Chat AI</h3>
-              <p className="text-gray-400">AI-powered document analysis and chat interface for all your PDF needs.</p>
+              <p className="text-gray-400">
+                AI-powered document analysis and chat interface for all your PDF
+                needs.
+              </p>
             </div>
 
             <div>
               <h4 className="font-medium mb-4">Product</h4>
               <ul className="space-y-2">
-                {["Features", "Pricing", "Use Cases", "Security"].map((item, i) => (
-                  <li key={i}>
-                    <Link href="#" className="text-gray-400 hover:text-white transition-colors">
-                      {item}
-                    </Link>
-                  </li>
-                ))}
+                {["Features", "Pricing", "Use Cases", "Security"].map(
+                  (item, i) => (
+                    <li key={i}>
+                      <Link
+                        href="#"
+                        className="text-gray-400 hover:text-white transition-colors"
+                      >
+                        {item}
+                      </Link>
+                    </li>
+                  )
+                )}
               </ul>
             </div>
 
@@ -150,7 +177,10 @@ export default function Home() {
               <ul className="space-y-2">
                 {["About", "Blog", "Careers", "Contact"].map((item, i) => (
                   <li key={i}>
-                    <Link href="#" className="text-gray-400 hover:text-white transition-colors">
+                    <Link
+                      href="#"
+                      className="text-gray-400 hover:text-white transition-colors"
+                    >
                       {item}
                     </Link>
                   </li>
@@ -161,30 +191,42 @@ export default function Home() {
             <div>
               <h4 className="font-medium mb-4">Legal</h4>
               <ul className="space-y-2">
-                {["Privacy", "Terms", "Cookie Policy", "Compliance"].map((item, i) => (
-                  <li key={i}>
-                    <Link href="#" className="text-gray-400 hover:text-white transition-colors">
-                      {item}
-                    </Link>
-                  </li>
-                ))}
+                {["Privacy", "Terms", "Cookie Policy", "Compliance"].map(
+                  (item, i) => (
+                    <li key={i}>
+                      <Link
+                        href="#"
+                        className="text-gray-400 hover:text-white transition-colors"
+                      >
+                        {item}
+                      </Link>
+                    </li>
+                  )
+                )}
               </ul>
             </div>
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400">© {new Date().getFullYear()} PDF Chat AI. All rights reserved.</p>
+            <p className="text-gray-400">
+              © {new Date().getFullYear()} PDF Chat AI. All rights reserved.
+            </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              {["Twitter", "LinkedIn", "GitHub", "YouTube"].map((platform, i) => (
-                <Link key={i} href="#" className="text-gray-400 hover:text-white transition-colors">
-                  {platform}
-                </Link>
-              ))}
+              {["Twitter", "LinkedIn", "GitHub", "YouTube"].map(
+                (platform, i) => (
+                  <Link
+                    key={i}
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    {platform}
+                  </Link>
+                )
+              )}
             </div>
           </div>
         </div>
       </footer>
     </div>
-  )
+  );
 }
-
