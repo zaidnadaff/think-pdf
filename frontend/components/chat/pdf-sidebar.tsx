@@ -6,6 +6,7 @@ import { FileText, Upload, Plus } from "lucide-react"
 import { useChatState, type PDFFile } from "./chat-state-provider"
 import { ConversationList } from "./conversation-list"
 import { useEffect } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 interface PDFSidebarProps {
   onUploadClick: () => void
@@ -21,8 +22,16 @@ export function PDFSidebar({ onUploadClick }: PDFSidebarProps) {
     setActiveConversation,
   } = useChatState()
 
+  const { toast } = useToast()
+
   const handlePDFSelect = (pdf: PDFFile) => {
     setActivePDF(pdf)
+
+    // Add toast notification
+    toast({
+      title: "PDF selected",
+      description: `Now viewing "${pdf.name}"`,
+    })
   }
 
   useEffect(() => {

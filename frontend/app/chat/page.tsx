@@ -2,22 +2,24 @@
 
 import type React from "react";
 
+import { NextRequest, NextResponse } from "next/server";
+
 import { useState, useRef, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, Upload, FileText } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { PDFSidebar } from "@/components/chat/pdf-sidebar";
-import { UploadSection } from "@/components/chat/upload-section";
 import { ChatInterface } from "@/components/chat/chat-interface";
-import { MobilePDFSelector } from "@/components/chat/mobile-pdf-selector";
+import { PDFTabs } from "@/components/chat/pdf-tabs";
 import {
   ChatStateProvider,
   useChatState,
 } from "@/components/chat/chat-state-provider";
-import { createDummyPDFs, createDummyConversations } from "@/utils/dummy-data";
+import { useToast } from "@/hooks/use-toast";
+import { uploadDocument } from "@/utils/api";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { DocumentWithConversation } from "@/components/chat/chat-state-provider";
 
 // Main Chat Page Component
 export default function ChatPage() {
@@ -30,38 +32,56 @@ export default function ChatPage() {
 
 // Chat Page Content Component (uses the ChatState context)
 function ChatPageContent() {
-  const {
-    uploadedPDFs,
-    setUploadedPDFs,
-    activePDF,
-    setActivePDF,
-    setConversations,
-  } = useChatState();
+  const { documents, setDocuments, setActiveDocument, isLoading } =
+    useChatState();
+  const { toast } = useToast();
 
-  const [activeTab, setActiveTab] = useState("chat"); // Start with chat tab
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle file upload
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (event.target.files && event.target.files.length > 0) {
-      const newPDFs = Array.from(event.target.files).map((file) => ({
-        id: Math.random().toString(36).substring(2, 9),
-        file,
-        name: file.name,
-        size: file.size,
-        uploadedAt: new Date(),
-      }));
+      const file = event.target.files[0];
 
-      setUploadedPDFs((prev) => [...prev, ...newPDFs]);
+      try {
+        setIsUploading(true);
 
-      // Set the first uploaded PDF as active if none is active
-      if (!activePDF) {
-        setActivePDF(newPDFs[0]);
-      }
+        // Upload the file to the server
+        const newDocument = await uploadDocument(file);
 
-      // Clear file input after upload
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+        // Add the new document to the state with empty conversation
+        const docWithConversation: DocumentWithConversation = {
+          ...newDocument,
+          conversation: [],
+        };
+
+        setDocuments((prev) => [...prev, docWithConversation]);
+
+        // Set the new document as active
+        setActiveDocument(docWithConversation);
+
+        // Clear file input after upload
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+
+        // Add toast notification
+        toast({
+          title: "PDF uploaded successfully",
+          description: `"${file.name}" has been uploaded`,
+        });
+      } catch (error) {
+        toast({
+          title: "Upload failed",
+          description:
+            "There was an error uploading your PDF. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsUploading(false);
       }
     }
   };
@@ -73,25 +93,50 @@ function ChatPageContent() {
     }
   };
 
-  // Switch to chat tab after uploading a PDF
+  // Load documents on mount
   useEffect(() => {
-    if (activePDF && activeTab === "upload") {
-      setActiveTab("chat");
-    }
-  }, [activePDF, activeTab]);
+    // Use a self-invoking async function to load documents
+    (async () => {
+      try {
+        const refreshResponse = await fetch(
+          new URL("/api/auth/refresh", request.url).toString(),
+          {
+            method: "GET",
+            headers: {
+              Cookie: request.headers.get("cookie") || "",
+            },
+          }
+        );
+        // Call the API directly here instead of using refreshDocuments
+        const response = await fetch("/api/list");
+        if (!response.ok) {
+          throw new Error("Failed to fetch documents");
+        }
+        const docs = await response.json();
 
-  // Load dummy data for demonstration
-  useEffect(() => {
-    if (uploadedPDFs.length === 0) {
-      const dummyPDFs = createDummyPDFs();
-      setUploadedPDFs(dummyPDFs);
-      setActivePDF(dummyPDFs[0]);
+        // Convert to DocumentWithConversation
+        const docsWithConversation: DocumentWithConversation[] = docs.map(
+          (doc: any) => ({
+            ...doc,
+            conversation: [],
+          })
+        );
 
-      const dummyConversations = createDummyConversations(
-        dummyPDFs.map((pdf) => pdf.id)
-      );
-      setConversations(dummyConversations);
-    }
+        setDocuments(docsWithConversation);
+
+        // Set the first document as active if there is one
+        if (docsWithConversation.length > 0) {
+          setActiveDocument(docsWithConversation[0]);
+        }
+      } catch (error) {
+        console.error("Error loading documents:", error);
+        toast({
+          title: "Error loading documents",
+          description: "Failed to load your documents. Please try again.",
+          variant: "destructive",
+        });
+      }
+    })();
   }, []);
 
   return (
@@ -113,7 +158,7 @@ function ChatPageContent() {
             href="/"
             className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600"
           >
-            think-pdf
+            PDF Chat AI
           </Link>
           <div className="flex items-center gap-4">
             <Avatar className="h-8 w-8">
@@ -135,54 +180,82 @@ function ChatPageContent() {
         </div>
       </motion.header>
 
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <PDFSidebar onUploadClick={handleUploadClick} />
+      {/* Loading state */}
+      {isLoading ? (
+        <div className="p-4">
+          <Skeleton className="h-10 w-full mb-4" />
+          <div className="flex-1 flex flex-col space-y-4 p-4">
+            <Skeleton className="h-20 w-3/4" />
+            <Skeleton className="h-20 w-3/4 ml-auto" />
+            <Skeleton className="h-20 w-3/4" />
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* PDF Tabs */}
+          {documents && documents.length > 0 && (
+            <PDFTabs onUploadClick={handleUploadClick} />
+          )}
 
-        {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="flex-1 flex flex-col overflow-hidden"
-          >
-            <div className="px-4 pt-4 border-b border-gray-200">
-              <TabsList className="grid w-full max-w-md grid-cols-2">
-                <TabsTrigger value="chat" disabled={!activePDF}>
-                  Chat
-                </TabsTrigger>
-                <TabsTrigger value="upload">Upload PDF</TabsTrigger>
-              </TabsList>
-            </div>
+          {/* Main Content */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {!documents || documents.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center p-4">
+                <div className="max-w-md w-full mx-auto space-y-6 text-center">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                  >
+                    <FileText className="h-16 w-16 mx-auto text-purple-600" />
+                  </motion.div>
+                  <h2 className="text-2xl font-bold">Upload a PDF Document</h2>
+                  <p className="text-gray-500">
+                    Upload a PDF file to chat with it. Our AI will analyze the
+                    content and answer your questions.
+                  </p>
 
-            <TabsContent
-              value="chat"
-              className="flex-1 flex flex-col overflow-hidden"
-            >
-              {/* Mobile PDF selector */}
-              {activePDF && (
-                <MobilePDFSelector onUploadClick={handleUploadClick} />
-              )}
-
-              {/* Chat Interface */}
+                  <motion.div
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-purple-500 transition-colors cursor-pointer"
+                    onClick={handleUploadClick}
+                    whileHover={{
+                      scale: 1.02,
+                      borderColor: "rgba(147, 51, 234, 0.5)",
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Upload className="h-8 w-8 mx-auto text-gray-400 mb-4" />
+                    <p className="text-sm text-gray-500">
+                      Click to upload or drag and drop
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      PDF files up to 10MB
+                    </p>
+                  </motion.div>
+                </div>
+              </div>
+            ) : (
               <div className="flex-1 flex flex-col overflow-hidden">
                 <ChatInterface />
               </div>
-            </TabsContent>
+            )}
+          </div>
 
-            <TabsContent value="upload" className="flex-1 overflow-auto">
-              <UploadSection
-                uploadedPDFs={uploadedPDFs}
-                activePDF={activePDF}
-                fileInputRef={fileInputRef}
-                onPDFSelect={setActivePDF}
-                onStartChat={() => setActiveTab("chat")}
-              />
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+          {/* Mobile upload button (fixed at bottom) */}
+          {documents && documents.length > 0 && (
+            <div className="md:hidden fixed bottom-20 right-4">
+              <Button
+                size="icon"
+                className="h-12 w-12 rounded-full shadow-lg bg-gradient-to-r from-purple-600 to-blue-500"
+                onClick={handleUploadClick}
+                disabled={isUploading}
+              >
+                <Upload className="h-5 w-5 text-white" />
+              </Button>
+            </div>
+          )}
+        </>
+      )}
 
       {/* Hidden file input */}
       <input
@@ -191,7 +264,6 @@ function ChatPageContent() {
         onChange={handleFileUpload}
         accept=".pdf"
         ref={fileInputRef}
-        multiple
       />
     </motion.div>
   );

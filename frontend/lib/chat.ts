@@ -4,10 +4,9 @@ import {
   AuthResponse,
   RefreshResponse,
   ApiResponse,
-  getUserResponse,
 } from "@/types/auth";
 
-const API_URL = process.env.AUTH_API_URL || "http://localhost:3000/api";
+const API_URL = process.env.CHAT_API_URL || "http://localhost:3001";
 
 export async function loginUser(
   credentials: LoginCredentials
@@ -138,25 +137,5 @@ export async function logoutUser(refreshToken: string): Promise<void> {
       "Logout error:",
       error instanceof Error ? error.message : String(error)
     );
-  }
-}
-
-export async function getUser(refreshToken: string): Promise<any> {
-  try {
-    const response = await fetch(`${API_URL}/auth/get-user`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ refreshToken }),
-      cache: "no-store",
-    });
-    if (!response.ok) {
-      throw new Error("Failed to get User Details");
-    }
-    const data = (await response.json()) as getUserResponse;
-    return data.userId;
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
   }
 }

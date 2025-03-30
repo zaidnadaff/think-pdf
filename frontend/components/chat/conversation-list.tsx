@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { MessageSquare, Plus, ChevronDown, ChevronRight, Trash2 } from "lucide-react"
 import { type ChatConversation, useChatState } from "./chat-state-provider"
 import { formatDistanceToNow } from "date-fns"
+import { useToast } from "@/hooks/use-toast"
 
 interface ConversationListProps {
   pdfId: string
@@ -23,6 +24,7 @@ export function ConversationList({ pdfId }: ConversationListProps) {
     activePDF,
   } = useChatState()
   const [isExpanded, setIsExpanded] = useState(true)
+  const { toast } = useToast()
 
   const pdfConversations = conversations.filter((conv) => conv.pdfId === pdfId)
 
@@ -34,6 +36,10 @@ export function ConversationList({ pdfId }: ConversationListProps) {
 
   const handleDeleteConversation = (e: React.MouseEvent, conversationId: string) => {
     e.stopPropagation()
+
+    // Find the conversation to get its title for the toast
+    const conversationToDelete = conversations.find((c) => c.id === conversationId)
+
     setConversations((prev) => prev.filter((c) => c.id !== conversationId))
 
     // If the active conversation is deleted, set the first available conversation as active
@@ -41,6 +47,15 @@ export function ConversationList({ pdfId }: ConversationListProps) {
       const remainingConversations = conversations.filter((c) => c.id !== conversationId && c.pdfId === pdfId)
       setActiveConversation(remainingConversations.length > 0 ? remainingConversations[0] : null)
     }
+
+    // Add toast notification
+    toast({
+      title: "Conversation deleted",
+      description: conversationToDelete
+        ? `Deleted "${conversationToDelete.title}"`
+        : "The conversation has been removed",
+      variant: "destructive",
+    })
   }
 
   return (

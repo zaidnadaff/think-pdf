@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 export default function Home() {
-  const featuresRef = useRef<HTMLDivElement>(null);
+  const featuresRef = useRef<HTMLDivElement>(
+    null
+  ) as React.RefObject<HTMLDivElement>;
 
   // Scroll to features section
   const scrollToFeatures = () => {

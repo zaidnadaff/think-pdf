@@ -41,3 +41,11 @@ export interface AuthContextType {
   register: (credentials: RegisterCredentials) => Promise<ApiResponse>;
   logout: () => Promise<void>;
 }
+
+export interface getUserRequest {
+  refreshToken: string;
+}
+
+export interface getUserResponse {
+  userId: string;
+}
