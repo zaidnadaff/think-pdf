@@ -125,12 +125,30 @@ router.post("/logout", async (req, res) => {
       return res.status(400).json({ message: "Refresh token is required" });
     }
 
-    // Delete refresh token from database
     await RefreshToken.destroy({
       where: { token: refreshToken },
     });
 
     res.json({ message: "Logged out successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.post("/get-user", async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({ message: "Refresh token is required" });
+    }
+
+    const token = await RefreshToken.findOne({
+      where: { token: refreshToken },
+    });
+
+    res.json({ userId: token.userId });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
