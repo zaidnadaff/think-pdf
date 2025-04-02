@@ -1,30 +1,38 @@
-// This is a mock implementation - replace with your actual API implementation
+import { NextRequest, NextResponse } from "next/server";
+import { ApiResponse } from "@/types/auth";
 
-export async function POST(req: Request) {
+export async function POST(
+  request: NextRequest
+): Promise<NextResponse<ApiResponse>> {
   try {
-    // In a real implementation, you would:
-    // 1. Parse the FormData from the request
-    // 2. Extract the file
-    // 3. Upload it to your storage
-    // 4. Process the PDF for AI analysis
-    // 5. Save metadata to your database
+    const formData = await request.formData();
 
-    // Simulate a delay for processing
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    const response = await fetch(`${process.env.DOC_API_URL}/upload`, {
+      method: "POST",
+      body: formData,
+      cache: "no-store",
+    });
 
-    // Create a random ID
-    const id = `doc-${Math.random().toString(36).substring(2, 9)}`
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Document upload failed");
+    }
 
-    // Return mock response
-    return Response.json({
-      id,
-      name: "Uploaded Document.pdf", // In a real implementation, use the actual filename
-      size: 2500000,
-      uploadedAt: new Date().toISOString(),
-    })
+    const data = await response.json();
+
+    return NextResponse.json({
+      success: true,
+      message: data.message || "Document uploaded successfully",
+      data: { documentId: data.id },
+    });
   } catch (error) {
-    console.error("Error uploading document:", error)
-    return Response.json({ error: "Failed to upload document" }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Document upload failed",
+      },
+      { status: 400 }
+    );
   }
 }
-

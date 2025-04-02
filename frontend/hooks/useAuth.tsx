@@ -62,7 +62,7 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       }
 
       setIsAuthenticated(true);
-      // router.push("/dashboard"); // Redirect to dashboard
+      router.push("/chat");
       return { success: true, message: "Login successful" };
     } catch (error) {
       return {

@@ -7,7 +7,7 @@ import {
   getUserResponse,
 } from "@/types/auth";
 
-const API_URL = process.env.AUTH_API_URL || "http://localhost:3000/api";
+const API_URL = process.env.AUTH_API_URL;
 
 export async function loginUser(
   credentials: LoginCredentials

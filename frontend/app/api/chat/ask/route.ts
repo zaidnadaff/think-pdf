@@ -1,37 +1,43 @@
-// This is a mock implementation - replace with your actual API implementation
+import { NextRequest, NextResponse } from "next/server";
+import { ApiResponse } from "@/types/auth";
 
-export async function POST(req: Request) {
+export async function POST(
+  request: NextRequest
+): Promise<NextResponse<ApiResponse>> {
   try {
-    const { documentId, question } = await req.json()
+    const { documentId, question } = await request.json();
 
-    // Validate input
     if (!documentId || !question) {
-      return Response.json({ error: "Document ID and question are required" }, { status: 400 })
+      throw new Error("Missing required fields");
     }
 
-    // Simulate a delay for AI processing
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    const response = await fetch(`${process.env.DOC_API_URL}/ask`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ documentId, question }),
+      cache: "no-store",
+    });
 
-    // Generate a mock answer based on the question
-    let answer = ""
-
-    if (question.toLowerCase().includes("summary")) {
-      answer =
-        "This document provides a comprehensive overview of the topic, covering key aspects such as methodology, findings, and conclusions. The main points include statistical analysis of the data, comparison with previous research, and recommendations for future studies."
-    } else if (question.toLowerCase().includes("conclusion")) {
-      answer =
-        "The conclusion of this document states that the research findings support the initial hypothesis with statistical significance (p<0.01). The authors recommend further investigation into specific areas and suggest practical applications for these findings in real-world scenarios."
-    } else if (question.toLowerCase().includes("data") || question.toLowerCase().includes("statistics")) {
-      answer =
-        "The document contains several key statistics:\n\n- Sample size: 1,245 participants\n- Control group: 623 participants\n- Test group: 622 participants\n- Success rate: 78.3% in the test group vs 43.1% in the control group\n- Confidence interval: 95%\n- Margin of error: ±2.7%"
-    } else {
-      answer = `Based on the document content, I can provide the following information about your question regarding "${question}":\n\nThe document discusses this topic in section 3.2, where it explains the key concepts and provides examples. The authors cite several studies that support their analysis, particularly the work by Johnson et al. (2021) which established the theoretical framework.\n\nWould you like me to elaborate on any specific aspect of this information?`
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to get answer");
     }
 
-    return Response.json({ answer })
+    const data = await response.json();
+
+    return NextResponse.json({
+      success: true,
+      message: "Answer generated successfully",
+      data: { response: data.response },
+    });
   } catch (error) {
-    console.error("Error processing question:", error)
-    return Response.json({ error: "Failed to process your question" }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Failed to get answer",
+      },
+      { status: 400 }
+    );
   }
 }
-
